@@ -275,6 +275,23 @@ function receivedMessage(event) {
        question = messageText;
      }
      console.log(messageText +" "+ currentIndex+" ");
+    
+      if(messageText.toLowerCase()==="Give your Feedback".toLowerCase())
+      {
+        //enabling the feedbackProcess module now all request will redirect to feedbackProcess box
+        manipulate(senderID,"You are being redirected to FeedBack section");
+ 
+       feedbackProcess=true;
+      }
+         //this will work when user click on register complaint or reqquest for complaint
+      if(messageText.toLowerCase()==="Issue or Complaint".toLowerCase())
+      {
+        //enabling the complaint module now all request will redirect to complaint box
+        //here no use of l
+        manipulate(senderID,"You are being redirected to complaint section");
+      
+       complaintProcessIndex=true;
+      }
 
      if(feedbackProcess==true)
      {
@@ -291,14 +308,7 @@ function receivedMessage(event) {
             feedback(senderID,messageText);
         }
      }
-
-     //this will work when user click on register complaint or reqquest for complaint
-      if(currentIndex==25 || currentIndex ==26)
-      {
-        //enabling the complaint module now all request will redirect to complaint box
-       complaintProcessIndex=true;
-      }
-        if(complaintProcessIndex == true)
+      else if(complaintProcessIndex == true)
         {
           //process the complaint
           
@@ -352,7 +362,7 @@ function receivedMessage(event) {
     if(messageText.includes("feedback") || messageText.includes("feed")&&messageText.includes("back"))
     {
         if(feedbackProcess!=true)
-          sendTextMessage(senderID,"You are being redirected to FeedBack section");
+          manipulate(senderID,"You are being redirected to FeedBack section");
         feedbackProcess = true;
         wait(1000);
     }
@@ -360,7 +370,7 @@ function receivedMessage(event) {
     if(messageText.includes("complaint") || messageText.includes("query") || messageText.includes("issue"))
     {
         if(complaintProcessIndex!=true){
-           sendTextMessage(senderID,"You are being redirected to complaint section");
+           manipulate(senderID,"You are being redirected to complaint section");
         }
         complaintProcessIndex=true;
         // this is to notify user that you have been redirected.
@@ -725,9 +735,33 @@ function sendReceiptMessage(recipientId) {
  * Send a message with Quick Reply buttons.
  *
  */
+        
+ var ignoreDataLog = ["You are being redirected to FeedBack section","You are being redirected to Complaint section",
+ "Please Enter Correct/valid required field or want to abort the process please click below at welcome to wishfin"]
 function sendQuickReply(recipientId,index) {
   //generating output from question bank. access the output using index
-  logFile(recipientId,question,data[index].answer);
+  var check = true;
+
+  for(i in ignoreDataLog)
+  {
+    if(question.toLowerCase().trim()===ignoreDataLog[i].toLowerCase().trim())
+      {
+        check=false;
+        break;
+      }
+     // for giving direction messages like incorrect input etc.
+    console.log("send Quick Reply ignoreDataLog\n"+data[index].question+"  "+ignoreDataLog[i]);
+    if(data[index].question.toLowerCase().trim()===ignoreDataLog[i].toLowerCase().trim())
+      {
+        check=false;
+        break;
+      }
+  }
+  if(check)
+  {
+    logFile(recipientId,question,data[index].answer);
+  }
+
   console.log(question+" "+JSON.stringify(data[index]));
   var reply = [];
   console.log("inside quick reply");
@@ -930,6 +964,7 @@ function callSendAPI(messageData) {
         recipientId);
       }
     } else {
+      sendTextMessage(recipientId,"There is some error please type again or contact after some time");
       console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
     }
   });
@@ -943,7 +978,6 @@ app.listen(app.get('port'), function() {
 });
 
 module.exports = app;
-
 // My Parameter
 
 //this is our question bank for getting output
@@ -952,9 +986,18 @@ var data = [
     {   id:1,
         question : "Welcome to Wishfin",
         replies : [
-            "questions about Wishfin",
-                "I am a customer",
-            "Check Free CIBIL Score"
+            //"questions about Wishfin",
+              //  "I am a customer",
+            "Free CIBIL Score",
+            "Get a Home Loan",
+            "Get a Personal Loan",
+            "Get a Car Loan",
+            "Get Credit Cards",
+            "Mutual Funds",
+            "Savings Account",
+            "Contact Sales Team",
+            "Issue or Complaint",
+            "Give your Feedback"
         ],
         answer : "Welcome to Wishfin. I am WishChat, a chatbot. How can I fulfill your wish?"
     },
@@ -974,7 +1017,7 @@ var data = [
             "want to know more?"
         ],
         answer:"WishFin is a platform run by Mywish Marketplaces Private Limited (MMPL). MMPL has pioneered financial marketplaces in India. It runs neutral financial marketplaces that leverage its proprietary technology to intermediate between the banks and customers seeking banking products."
-    }, 
+    },
     {   id:4,
         question : "About Us",
         replies : [
@@ -1046,7 +1089,7 @@ var data = [
         answer : "Kindly select below to start again"
     },
     {   id:13,
-        question : "Check Free CIBIL Score",
+        question : "Free CIBIL Score",
         replies : [
             "Show other loans",
             "Welcome to Wishfin"
@@ -1150,7 +1193,7 @@ var data = [
         replies : [
             "questions about Wishfin",
                 "I am a customer",
-            "Check Free CIBIL Score"
+            "Free CIBIL Score"
         ],
         answer : "My name is Wishfin Chat"
     },
@@ -1176,10 +1219,11 @@ var data = [
         answer : "Thank You for giving us your complaint. We will back to you soon."
     },
     {   id:27,
-        question : "I have issue or complaint",
+        question : "Issue or Complaint",
         replies : [
-            "https://www.wishfin.com/",
-            "register your complaint"
+            "register your complaint", "Give your Feedback",
+            "Contact Sales Team",
+            "Welcome to Wishfin"
         ],
         answer : "Sorry for inconvenience. Please Contact the concern person : +91-8882935454"
     },
@@ -1191,7 +1235,7 @@ var data = [
         answer : "Sorry! i didn't get you , what do you want to say, please say again"
     },
     {   id:29,
-        question : "i want a personal loan, need a personal loan, how can i get the personal loan PL",
+        question : "need personal loan, get PL",
         replies : [
           "Show other loans",
             "Welcome to Wishfin"
@@ -1224,7 +1268,7 @@ var data = [
         answer : "Please refer this site for home loans https://www.wishfin.com/home-loan"
     },
     {   id:33,
-        question : "What is mutual funds, want to know about mutual funds, do you have any idea about mutual funds",
+        question : "mutual funds know , idea",
         replies : [
         "Contact Sales Team",
            "Show other loans",
@@ -1244,7 +1288,7 @@ var data = [
     {   id:35,
         question : "why i have not recieved my money why i am getting delayed in getting my loan amount",
         replies : [
-        "Check Free CIBIL Score",
+        "Free CIBIL Score",
             "Welcome to Wishfin",
             "Contact Sales Team"
         ],
@@ -1254,7 +1298,7 @@ var data = [
         question : "when will i get my money of loan , why i am getting delayed in getting my loan amount",
         replies : [
             "Contact Sales Team",
-           "Check Free CIBIL Score"
+           "Free CIBIL Score"
         ],
         answer : "Your loan amount will be transferred shortly"
     },
@@ -1276,7 +1320,7 @@ var data = [
     {   id:39,
         question : "i need your help , i have a query , i need to ask you a question , please help me out",
         replies : [
-        "I have issue or complaint",
+        "Issue or Complaint",
               "Welcome to Wishfin",
                 "Contact Sales Team"
         ],
@@ -1330,10 +1374,11 @@ var data = [
     {   id:45,
         question : "what services are provided by you , wishfin whishfin wf , company , institution , firm , organization",
         replies : [
-        "I have issue or complaint",
+        "Issue or Complaint",
               "Welcome to Wishfin",
-              "Contact Sales Team"
-        
+              "Contact Sales Team","Give your Feedback"
+
+
         ],
         answer : " We provide loans , mutual funds , saving account etc."
     },
@@ -1342,7 +1387,7 @@ var data = [
         replies : [
                "Contact Sales Team",
            "Show other loans",
-            "Welcome to Wishfin"
+            "Welcome to Wishfin","Give your Feedback"
         ],
         answer : "A mutual fund is a type of financial vehicle made up of a pool of money collected from many investors to invest in securities such as stocks, bonds, money market instruments, and other assets. For more detail Please refer this site for mutual funds loan loans https://mutualfund.wishfin.com/?utm_source=Wishfin&utm_medium=Homepage&utm_campaign=Navigation"
     },
@@ -1365,7 +1410,7 @@ var data = [
     {   id:49,
         question : "any success stories , story , article , blogs , writeups , write ",
         replies : [
-              "Check Free CIBIL Score",
+              "Free CIBIL Score",
             "Welcome to Wishfin",
             "Contact Sales Team"
         ],
@@ -1374,7 +1419,7 @@ var data = [
     {   id:50,
         question : "diff different diferentiate differences between b/w bw mf mutual funds loan vs v/s versus",
         replies : [
-               "Check Free CIBIL Score",
+               "Free CIBIL Score",
                "Welcome to Wishfin"
         ],
         answer : "there are various difference between loan and mutual funds. For such differences you can visit this web page : https://cleartax.in/s/loan-against-mutual-funds"
@@ -1382,7 +1427,7 @@ var data = [
     {   id:51,
         question : "leave me alone don't  talk shut up get lost",
         replies : [
-               "I have issue or complaint",
+               "Issue or Complaint","Give your Feedback",
              "Show other loans",
                 "Contact Sales Team"
         ],
@@ -1401,7 +1446,7 @@ var data = [
         question : "want need credit cards loans CC ",
         replies : [
         "Show other loans",
-               "Welcome to Wishfin",
+               "Welcome to Wishfin","Give your Feedback",
                 "Contact Sales Team"
         ],
         answer : "Please refer this site for credit cards loans : https://www.wishfin.com/credit-cards"
@@ -1442,25 +1487,56 @@ var data = [
         question : "Please select the below mentioned suggestions",
         replies : [
             "Welcome to Wishfin",
-            "I have issue or complaint",
-            "Contact Sales Team",  
+            "Issue or Complaint",
+            "Contact Sales Team", 
+            "Give your Feedback", 
             "about Wishfin",
                 "Loans provided by us"
         ],
         answer : "Please select the below mentioned suggestions"
     },
-    ,
     {   id:58,
         question : "your service is pathetic ,  worse , useless ",
         replies : [
-            "https://www.wishfin.com/",
-            "register your complaint"
+            "Contact Sales Team",
+            "register your complaint","Give your Feedback"
         ],
         answer : "Sorry for inconvenience. Please Contact the concern person : +91-8882935454"
     },
+    {   id:59,
+        question : "Give your Feedback",
+        replies : [
+           "Contact Sales Team",
+            "register your complaint"
+        ],
+        answer : "Thank You for giving us your Feedback."
+    },
+    //these are for complaint and feedback section
+    {   id:60,
+        question : "You are being redirected to FeedBack section",
+        replies : [
+          "Abort Your Process"
+        ],
+        answer : "You are being redirected to FeedBack section"
+    },
+    {   id:61,
+        question : "You are being redirected to Complaint section",
+        replies : [
+          "Abort Your Process"
+        ],
+        answer : "You are being redirected to Complaint section"
+    },
+    {   id:62,
+        question : "Please Enter Correct/valid required field or want to abort the process please click below at welcome to wishfin",
+        replies : [
+          "Abort Your Process"
+        ],
+        answer : "Please Enter Correct/valid required field or want to abort the process please click below at welcome to wishfin"
+    }
     
     
 ];
+//"Please Enter Correct/valid required field or want to abort the process please click below at welcome to wishfin"
 
 //let enlargedata = [];
 
@@ -1474,10 +1550,10 @@ var phrases = [
 "leave me alone don't  talk shut up get lost",
 " i am ok , fine , good , cool ",
 "good service job exellent work thanks you love bye",
-"i want a personal loan, need a personal loan, how can i get the personal loan PL",
-"What is mutual funds, want to know about mutual funds, do you have any idea about mutual funds",
+"need personal loan, get PL",
+"mutual funds know , idea",
 "i need your help , i have a query , i need to ask you a question , please help me out",
-"I have issue or complaint",
+"Issue or Complaint",
 "want need credit cards loans CC ",
 "register your complaint","what is wishfin wf",
 "what is your name who are you what people call you","You can get a loan of amount upto 50 lakhs",
@@ -1498,7 +1574,7 @@ var phrases = [
 "I couldn't get what you are saying","Welcome to Wishfin","questions about Wishfin","about Wishfin",
 "About Us","check the website on my own","want to know more?",
 "Our Investors","Media Coverage","How can I get a Loan",
-"Loans provided by us","Want To start Again","Check Free CIBIL Score","what is my cibil score",
+"Loans provided by us","Want To start Again","Free CIBIL Score","what is my cibil score",
 "Show other loans","I am a customer","Get a Home Loan",
 "Get a Personal Loan","Get a Car Loan","Get Credit Cards","Mutual Funds",
 "Savings Account","Contact Sales Team",
@@ -1512,15 +1588,15 @@ var phrases = [
 "any success stories , story , article , blogs , writeups , write ", 
 "diff different diferentiate differences between b/w bw mf mutual funds loan vs v/s versus",
 "your service is pathetic ,  worse , useless ",
-"what is will be the interest rates"
+"what is will be the interest rates","Give your Feedback"
 ]
 
 var fs = require('fs');
-var phrases1 = fs.readFileSync("phrases.txt").toString();
+//var phrases1 = fs.readFileSync("phrases.txt").toString();
 //phrases.append(phrases1);
-phrases.push(phrases1);
+//phrases.push(phrases1);
 //console.log("global"+phrases);
- var enlargedata = fs.readFileSync("BotContent.json").toString();
+ //var enlargedata = fs.readFileSync("BotContent.json").toString();
 //console.log("global"+enlargedata);
 
 
@@ -1535,7 +1611,7 @@ function manipulate(recipientId,message){
       //console.log(message);
 
       //matching which question matches with the clicked quick reply
-      if(data[i].question.toLowerCase().trim()==message.toLowerCase().trim())
+      if(message.length>0 && data[i].question.toLowerCase().trim()==message.toLowerCase().trim())
       {
         //console.log("generating quick reply");
         //console.log(i);
@@ -1548,22 +1624,28 @@ function manipulate(recipientId,message){
 }
 function manipulateForBotContent(recipientId,message){
     console.log("reached in manipulate for bot content");
-    console.log(message);
-    for( var i in enlargedata)
+    console.log("message"+message);
+    try{
+      for( var i in enlargedata)
     {
       //console.log(i);
       //console.log(enlargedata[i].question);
       //console.log(message);
 
       //matching which question matches with the clicked quick reply
-      if(enlargedata[i].question.toLowerCase().trim()==message.toLowerCase().trim())
+      if(message.length>0 && enlargedata[i].question.toLowerCase().trim()==message.toLowerCase().trim())
       {
         //console.log("generating quick reply");
         //console.log(i);
         currentIndex=i;
-        sendTextMessage(recipientId,enlargedata[i].answer);
+        sendTextMessage(recipientId,enlargedata[i].answer,true);
         return 0 ;
       }
+    }
+    }
+    catch(e)
+    {
+      console.log(e);
     }
     return -1;
 }
@@ -1610,12 +1692,12 @@ function removeStopWords(message){
 }
 
 //lemmetize the words
-var Lemmer = require('lemmer').Lemmer;
-function lemmetinzaion(word)
+var lemmer = require('lemmer').Lemmer;
+function lemmetization(word)
 {
-  var lemmerEng = new Lemmer('english');  
+  //var lemmerEng = new lemmer('english');  
   try{
-      return lemmerEng.lemmatize(word);
+      return lemmer.lemmatize(word);
   }
   catch(e)
   {
@@ -1657,7 +1739,7 @@ function processing(senderID,message)
       //console.log(content[i]);
       
       //find the possibilities of getting the phrase for given token and do this for all tokens
-      content[i]=lemmetinzaion(word);
+      content[i]=lemmetization(content[i]);
       for(var j = 0 ;j<phrases.length;j++)
       {
         //finding the token in the string of questions and answer.
@@ -1689,7 +1771,7 @@ function processing(senderID,message)
       //here -1 means -> there is not response in our database
       if(check == -1)
         {
-          //console.log("inside procesing - check condition " + messagePhrase);
+          console.log("inside procesing - check condition " + messagePhrase);
 
           var c = manipulateForBotContent(senderID,messagePhrase);
 
@@ -1788,35 +1870,35 @@ var complaint =  [
     {        
         question : "What is you name ?",
         replies : [
-               "Welcome to Wishfin"
+               "Abort Your Process"
         ],
-        answer : "Hello sir, welcome to complaint section, What is you name ?"
+        answer : "Hello sir, welcome to complaint/feedback section, What is you name ?"
     },
     {   
-        question : "What is your age ?",
+        question : "What is your 10 digit Phone Number ?",
         replies : [
-               "Welcome to Wishfin"
+               "Abort Your Process"
         ],
-        answer : "What is your age ?"
+        answer : "What is your 10 digit Phone Number ?"
     },
     {   
         question : "what is your email id ?",
         replies : [
-               "Welcome to Wishfin"
+               "Abort Your Process"
         ],
         answer : "what is your email id ?"
     },
     {   
         question : "what is your complaint/feedback ?",
         replies : [
-               "Welcome to Wishfin"
+               "Abort Your Process"
         ],
         answer : "what is your complaint/feedback ?"
     },
     {   
         question : "This is your Query Please check it again Answer as y or n",
         replies : [
-               "Welcome to Wishfin"
+               "Abort Your Process"
         ],
         answer : " " 
     }
@@ -1830,7 +1912,7 @@ var complaintIndex = 0;
 //holding the details of user during the complaint processing.
 var userComplaint = {
   userName :" ",
-  userAge :" ",
+  userNumber :" ",
   userEmail :" ",
   userComplaint:" "
 }
@@ -1852,7 +1934,7 @@ function processComplaint(senderID,message){
   {
      setData(message,complaintIndex,userComplaint);
     console.log(complaintIndex+" query index " + senderID);
-    complaint[complaintIndex].answer=    "Your name is :"+userComplaint.userName + "\nYour age is : " + userComplaint.userAge + "\nyour email id is :" + userComplaint.userEmail + "\nyour complaint is : " + userComplaint.userComplaint +"\nThis is your Query Please check it again Answer as y or n to complete or abort the complaint process";
+    complaint[complaintIndex].answer=    "Your name is :"+userComplaint.userName + "\nYour userNumber is : " + userComplaint.userNumber + "\nyour email id is :" + userComplaint.userEmail + "\nyour complaint is : " + userComplaint.userComplaint +"\nThis is your Query Please check it again Answer as y or n to complete or abort the complaint process";
 
     sendQuickReplyModified(senderID,complaint[complaintIndex]);
     complaintIndex++;
@@ -1890,7 +1972,7 @@ function processComplaint(senderID,message){
       //if verification fails
         
 
-        sendTextMessage(senderID,"Please Enter Correct/valid required field or want to abort the process please click below at welcome to wishfin",false);
+        manipulate(senderID,"Please Enter Correct/valid required field or want to abort the process please click below at welcome to wishfin");
         wait(1000);
         sendQuickReplyModified(senderID,complaint[complaintIndex-1]);   
     }
@@ -1903,7 +1985,7 @@ function setData(message,index,object)
   if(index==1)
     object.userName=message;
   if(index==2)
-    object.userAge=message;
+    object.userNumber=message;
   if(index==3)
     object.userEmail=message;
   if(index==4 && feedbackProcess==true)
@@ -1946,7 +2028,7 @@ function verification(message,index){
   {
     if(isNaN(message))
       return -1;
-    if(message.length>2)
+    if(message.length!=10)
       return -1;
     return 0; 
   }
@@ -2167,7 +2249,7 @@ var feedbackIndex = 0;
 //holding the details of user during the complaint processing.
 var userFeedBack = {
   userName :" ",
-  userAge :" ",
+  userNumber :" ",
   userEmail :" ",
   userFeedBack:" "
 }
@@ -2186,7 +2268,7 @@ function feedback(senderID,message){
   {
      setData(message,feedbackIndex,userFeedBack);
     console.log(feedbackIndex+" query index " + senderID);
-    complaint[feedbackIndex].answer=    "Your name is :"+userFeedBack.userName + "\nYour age is : " + userFeedBack.userAge + "\nyour email id is :" + userFeedBack.userEmail + "\nyour feedback is : " + userFeedBack.userFeedBack +"\nThis is your feedback Please check it again Answer as y or n to complete or abort the feedback process";
+    complaint[feedbackIndex].answer=    "Your name is :"+userFeedBack.userName + "\nYour age is : " + userFeedBack.userNumber + "\nyour email id is :" + userFeedBack.userEmail + "\nyour feedback is : " + userFeedBack.userFeedBack +"\nThis is your feedback Please check it again Answer as y or n to complete or abort the feedback process";
 
     sendQuickReplyModified(senderID,complaint[feedbackIndex]);
     feedbackIndex++;
@@ -2221,7 +2303,7 @@ function feedback(senderID,message){
     }
     else{
       //if verification fails
-        sendTextMessage(senderID,"Please Enter Correct/valid required field or want to abort the process please click below at welcome to wishfin",false);
+        manipulate(senderID,"Please Enter Correct/valid required field or want to abort the process please click below at welcome to wishfin");
         wait(1000);
         sendQuickReplyModified(senderID,complaint[feedbackIndex-1]);   
     }
